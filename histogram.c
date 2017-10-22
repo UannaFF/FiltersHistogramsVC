@@ -36,6 +36,11 @@ void histogramEqualization( gray* graymap, int rows, int cols, int maxval){
         newHistogram[(int)cdf[i]] += histogram[i]; 
     }
 
+    for(int i=0; i < rows; i++)
+        for(int j=0; j < cols ; j++){
+                graymap[i * cols + j]  = cdf[graymap[i * cols + j]];
+        }
+
     printHistogram(newHistogram, 255);
     free(cdf);
     free(newHistogram);
