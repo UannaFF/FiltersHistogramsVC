@@ -13,6 +13,36 @@ void printHistogram(int *histogram, int lengthOfHistogram){
   }
 }
 
+int *getIntensityHistogram(gray* graymap, int rows, int cols, int maxval){
+	int i, j;
+	int *intensityHistogram = (int *)calloc(maxval , sizeof(int));
+	for(i=0; i < rows; i++)
+		for(j=0; j < cols ; j++)
+				intensityHistogram[graymap[i * cols + j]] += 1;
+
+	return intensityHistogram;
+}
+
+void stretchHistogram( gray* graymap, int rows, int cols, int maxval){
+	int *intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
+	int oldMin = -1, oldMax = -1, i ,j;
+	for ( i = 0; i < maxval; i++) {
+		if(intensityHistogram[i] != 0 && oldMin == -1){
+				oldMin = i;
+		}else if(intensityHistogram[ maxval - i - 1 ] != 0 && oldMax == -1){
+				oldMax =  maxval - i - 1;
+		}
+	}
+	free(intensityHistogram);
+
+	fprintf( stderr,"\nOld min : %d Old Max %d \n",oldMin, oldMax);
+
+	for(i=0; i < rows; i++)
+		for(j=0; j < cols ; j++){
+				graymap[i * cols + j]  = (gray)( (float)(graymap[i * cols + j] - oldMin)/(oldMax - oldMin) * maxval);
+		}
+}
+
 int main(int argc, char* argv[])
     {
     FILE* ifp;
@@ -63,14 +93,15 @@ int main(int argc, char* argv[])
         else
           graymap[i * cols + j] = pm_getint(ifp);
 
-    //applyBinomialFilter(graymap,rows, cols, maxval, available_b_filters[0],1);
+		int *intensityHistogram = getIntensityHistogram(graymap, rows, cols, maxval);
+    printHistogram(intensityHistogram, maxval);
 
-    int *intensityHistogram = (int *)calloc(maxval , sizeof(int));
-    for(i=0; i < rows; i++)
-      for(j=0; j < cols ; j++)
-          intensityHistogram[graymap[i * cols + j]] += 1;
+		stretchHistogram(graymap,rows, cols, maxval);
 
-    printHistogram(intensityHistogram,maxval);
+		fprintf( stderr,"\n--------> NEW HISTOGRAM \n");
+
+		intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
+		printHistogram(intensityHistogram,maxval);
 
     /* Writing */
     if(pgmraw)
@@ -87,8 +118,6 @@ int main(int argc, char* argv[])
           printf("%c",graymap[i * cols + j]);
         else
           printf("%d ", graymap[i * cols + j]);
-
-        /*putc(graymap[i * cols + j],stdout);*/
 
 
       /* Closing */
