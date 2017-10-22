@@ -5,7 +5,7 @@
 #######################################
 
 
-PROG = filters
+PROG = filters histogram
 
 all : $(PROG)
 
@@ -18,10 +18,10 @@ LDFLAGS   =  -g -lm
 #pxmtopxm : pxmtopxm.o Util.o
 
 filters : filters.o Util.o
+histogram : histogram.o Util.o
 
 clean :
 	@rm -f *.o
 
 cleanall : clean
 	@rm -f $(PROG)
-
