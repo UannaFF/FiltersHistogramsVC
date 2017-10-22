@@ -23,6 +23,25 @@ int *getIntensityHistogram(gray* graymap, int rows, int cols, int maxval){
 	return intensityHistogram;
 }
 
+void histogramEqualization( gray* graymap, int rows, int cols, int maxval){
+    int *histogram = getIntensityHistogram(graymap, rows, cols,maxval);
+    float *cdf = (float *)calloc(maxval , sizeof(float));
+    int *newHistogram = (int *)calloc(255 , sizeof(int));
+    float accum = 0, levels = 254;
+    int nPixels = rows * cols;
+
+    for(int i = 0; i < maxval; i++){
+        accum += histogram[i];
+        cdf[i] = (accum/nPixels) * levels;
+        newHistogram[(int)cdf[i]] += histogram[i]; 
+    }
+
+    printHistogram(newHistogram, 255);
+    free(cdf);
+    free(newHistogram);
+
+}
+
 void stretchHistogram( gray* graymap, int rows, int cols, int maxval){
 	int *intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
 	int oldMin = -1, oldMax = -1, i ,j;
@@ -49,15 +68,18 @@ int main(int argc, char* argv[])
     gray* graymap;
     int ich1, ich2, rows, cols, maxval=255, pgmraw;
     int i, j;
+    int type;
 
     /* Arguments */
-    if ( argc != 2 ){
+    if ( argc != 3){
       printf("\nUsage: %s file \n\n", argv[0]);
       exit(0);
     }
 
     /* Opening */
     ifp = fopen(argv[1],"r");
+    type = atoi(argv[2]);
+
     if (ifp == NULL) {
       printf("error in opening file %s\n", argv[1]);
       exit(1);
@@ -93,16 +115,20 @@ int main(int argc, char* argv[])
         else
           graymap[i * cols + j] = pm_getint(ifp);
 
-		int *intensityHistogram = getIntensityHistogram(graymap, rows, cols, maxval);
-    printHistogram(intensityHistogram, maxval);
+    if(type) {
+        histogramEqualization(graymap,rows, cols, maxval);
+    } else {
+  		int *intensityHistogram = getIntensityHistogram(graymap, rows, cols, maxval);
+        printHistogram(intensityHistogram, maxval);
 
-		stretchHistogram(graymap,rows, cols, maxval);
+  		stretchHistogram(graymap,rows, cols, maxval);
 
-		fprintf( stderr,"\n--------> NEW HISTOGRAM \n");
+  		fprintf( stderr,"\n--------> NEW HISTOGRAM \n");
 
-		intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
-		printHistogram(intensityHistogram,maxval);
+  		intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
+  		printHistogram(intensityHistogram,maxval);
 
+    }
     /* Writing */
     if(pgmraw)
       printf("P5\n");
