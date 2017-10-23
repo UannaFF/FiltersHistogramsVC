@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "Util.h"
 
+/* prints histogram for testing purpose*/
 void printHistogram(int *histogram, int lengthOfHistogram){
   int i, j;
   for (i = 0; i < lengthOfHistogram; i++) {
@@ -13,6 +14,7 @@ void printHistogram(int *histogram, int lengthOfHistogram){
   }
 }
 
+/* creates an intensity histogram */
 int *getIntensityHistogram(gray* graymap, int rows, int cols, int maxval){
 	int i, j;
 	int *intensityHistogram = (int *)calloc(maxval , sizeof(int));
@@ -23,21 +25,22 @@ int *getIntensityHistogram(gray* graymap, int rows, int cols, int maxval){
 	return intensityHistogram;
 }
 
-void histogramEqualization( gray* graymap, int rows, int cols, int maxval){
+/* makes histogram equalization on a givin image */
+void equalizeHistogram( gray* graymap, int rows, int cols, int maxval){
     int *histogram = getIntensityHistogram(graymap, rows, cols,maxval);
     printHistogram(histogram, maxval); //Print previoua histogram
 
     fprintf( stderr,"\n--------> EQUALIZED HISTOGRAM \n");
 
     float *cdf = (float *)calloc(maxval , sizeof(float));
-    int *newHistogram = (int *)calloc(255 , sizeof(int));
-    float accum = 0, levels = 254;
+    int *newHistogram = (int *)calloc(maxval , sizeof(int));
+    float accum = 0, levels = maxval;
     int nPixels = rows * cols;
 
     for(int i = 0; i < maxval; i++){
         accum += histogram[i];
         cdf[i] = (accum/nPixels) * levels;
-        newHistogram[(int)cdf[i]] += histogram[i]; 
+        newHistogram[(int)cdf[i]] += histogram[i];
     }
 
     for(int i=0; i < rows; i++)
@@ -45,12 +48,11 @@ void histogramEqualization( gray* graymap, int rows, int cols, int maxval){
                 graymap[i * cols + j]  = cdf[graymap[i * cols + j]];
         }
 
-    printHistogram(newHistogram, 255);
     free(cdf);
     free(newHistogram);
-
 }
 
+/* makes histogram strecthing on a givin image */
 void stretchHistogram( gray* graymap, int rows, int cols, int maxval){
 	int *intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
 	int oldMin = -1, oldMax = -1, i ,j;
@@ -61,14 +63,13 @@ void stretchHistogram( gray* graymap, int rows, int cols, int maxval){
 				oldMax =  maxval - i - 1;
 		}
 	}
-	free(intensityHistogram);
-
-	fprintf( stderr,"\nOld min : %d Old Max %d \n",oldMin, oldMax);
 
 	for(i=0; i < rows; i++)
 		for(j=0; j < cols ; j++){
 				graymap[i * cols + j]  = (gray)( (float)(graymap[i * cols + j] - oldMin)/(oldMax - oldMin) * maxval);
 		}
+
+  free(intensityHistogram);
 }
 
 int main(int argc, char* argv[])
@@ -105,8 +106,9 @@ int main(int argc, char* argv[])
       pm_erreur(" wrong file type ");
     else
       if(ich2 == '2')
-	pgmraw = 0;
-      else pgmraw = 1;
+	       pgmraw = 0;
+      else
+        pgmraw = 1;
 
     /* Reading image dimensions */
     cols = pm_getint( ifp );
@@ -125,19 +127,11 @@ int main(int argc, char* argv[])
           graymap[i * cols + j] = pm_getint(ifp);
 
     if(type) {
-        histogramEqualization(graymap,rows, cols, maxval);
+        equalizeHistogram(graymap,rows, cols, maxval);
     } else {
-  		int *intensityHistogram = getIntensityHistogram(graymap, rows, cols, maxval);
-        printHistogram(intensityHistogram, maxval);
-
-  		stretchHistogram(graymap,rows, cols, maxval);
-
-  		fprintf( stderr,"\n--------> NEW HISTOGRAM \n");
-
-  		intensityHistogram = getIntensityHistogram(graymap, rows, cols,maxval);
-  		printHistogram(intensityHistogram,maxval);
-
+  		  stretchHistogram(graymap,rows, cols, maxval);
     }
+
     /* Writing */
     if(pgmraw)
       printf("P5\n");
@@ -155,7 +149,7 @@ int main(int argc, char* argv[])
           printf("%d ", graymap[i * cols + j]);
 
 
-      /* Closing */
-      fclose(ifp);
-      return 0;
+    /* Closing */
+    fclose(ifp);
+    return 0;
 }
