@@ -59,7 +59,7 @@ void medianFilter(gray* graymap, gray* result, int rows, int cols, int filterSiz
 
 }
 
-/* gaussian  */
+/* gaussian filter function */
 void gaussianFilter(gray* graymap, gray* result, int rows, int cols, int filterSize) {
 
 	 int *filter = (filterSize == 3 ) ? filter3 : filter5;
@@ -70,7 +70,7 @@ void gaussianFilter(gray* graymap, gray* result, int rows, int cols, int filterS
 	    for(int j=1; j < cols-1 ; j++){
 	    	float sum = 0;
 	    	int filterMiddle = filterSize/2;
-	    	//fprintf(stderr,"Filter center %d for size %d\n", filterMiddle, filterSize);
+				
 	    	for(int k = 0; k < filterSize; k++) {
 	    		for(int t = 0; t < filterSize; t++) {
 	    			int subCols = k - filterMiddle;
@@ -154,7 +154,6 @@ int main(int argc, char* argv[]) {
           graymap[i * cols + j] = pm_getint(ifp);
 
    	//Filtering
-
     //We create a results array
    	gray* graymapResult = (gray *) malloc(cols * rows * sizeof(gray));
    	for(int i=0; i < rows; i++){
