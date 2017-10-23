@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
         }
     } else {
         for(int i = 0 ; i < numberOfIterations ; i++){
-            fprintf(stderr,"Smooth number %d \n", i );
+            fprintf(stderr,"Smooth number gaussian %d \n", i );
             gaussianFilter(graymap, graymapResult, rows, cols, filterSize);
         }
     }

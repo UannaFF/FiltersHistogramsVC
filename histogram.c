@@ -25,6 +25,10 @@ int *getIntensityHistogram(gray* graymap, int rows, int cols, int maxval){
 
 void histogramEqualization( gray* graymap, int rows, int cols, int maxval){
     int *histogram = getIntensityHistogram(graymap, rows, cols,maxval);
+    printHistogram(histogram, maxval); //Print previoua histogram
+
+    fprintf( stderr,"\n--------> EQUALIZED HISTOGRAM \n");
+
     float *cdf = (float *)calloc(maxval , sizeof(float));
     int *newHistogram = (int *)calloc(255 , sizeof(int));
     float accum = 0, levels = 254;
